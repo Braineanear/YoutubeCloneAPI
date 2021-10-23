@@ -50,11 +50,11 @@ export const signup = catchAsync(async (req, res, next) => {
     role
   });
 
-  const tokens = await generateAuthTokens(user);
+  const tokens = await generateAuthTokens(user.id);
 
-  const verifyEmailToken = await generateVerifyEmailToken(user);
+  const verifyEmailToken = await generateVerifyEmailToken(user.id);
 
-  await sendVerificationMessage(user.email, verifyEmailToken);
+  await sendVerificationMessage(email, verifyEmailToken);
 
   user.password = undefined;
 
@@ -90,7 +90,7 @@ export const signin = catchAsync(async (req, res, next) => {
     return next(new AppError(req.polyglot.t('incorrectEmailOrPassword'), 401));
   }
 
-  const tokens = await generateAuthTokens(user);
+  const tokens = await generateAuthTokens(user.id);
 
   user.password = undefined;
 
@@ -145,7 +145,7 @@ export const refreshAuth = catchAsync(async (req, res, next) => {
     return next(new AppError(req.polyglot.t('noUserFound'), 404));
   }
 
-  const tokens = await generateAuthTokens(user);
+  const tokens = await generateAuthTokens(user.id);
 
   return res.status(200).json({
     status: 'success',
@@ -159,10 +159,16 @@ export const refreshAuth = catchAsync(async (req, res, next) => {
  * @route     POST  /auth/forgotPassword
  * @access    Public
  */
-export const forgotPassword = catchAsync(async (req, res) => {
+export const forgotPassword = catchAsync(async (req, res, next) => {
   const { email } = req.body;
 
-  const resetPasswordToken = await generateResetPasswordToken(email);
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return next(new AppError(req.polyglot.t('noUserFound'), 404));
+  }
+
+  const resetPasswordToken = await generateResetPasswordToken(user.id);
 
   await sendResetPasswordMessage(email, resetPasswordToken);
 
@@ -228,7 +234,7 @@ export const sendVerificationEmail = catchAsync(async (req, res, next) => {
     return next(new AppError(req.polyglot.t('emailVerified'), 400));
   }
 
-  const verifyEmailToken = await generateVerifyEmailToken(user);
+  const verifyEmailToken = await generateVerifyEmailToken(user.id);
 
   await sendVerificationMessage(user.email, verifyEmailToken);
 
