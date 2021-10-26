@@ -9,6 +9,7 @@ const envVarsSchema = Joi.object()
       .valid('production', 'development', 'test')
       .required(),
     PORT: Joi.number().default(3000),
+    REDIS_PORT: Joi.number.default(6379),
     DATABASE_CONNECTION: Joi.string().required(),
     DATABASE_PASSWORD: Joi.string().required(),
     AWS_ACCESS_KEY_ID: Joi.string().required(),
@@ -39,6 +40,9 @@ if (error) {
 const config = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
+  redis: {
+    port: envVars.REDIS_PORT
+  },
   db: {
     url: envVars.DATABASE_CONNECTION,
     pass: envVars.DATABASE_PASSWORD
