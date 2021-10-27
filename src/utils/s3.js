@@ -1,6 +1,3 @@
-import fs from 'fs';
-import { promisify } from 'util';
-
 import s3 from '../config/s3';
 import config from '../config/config';
 
@@ -60,21 +57,15 @@ export const deleteBucket = (bucketName) => {
   });
 };
 
-export const uploadObject = catchAsync(async (req, userId) => {
-  const fileStream = fs.createReadStream(req.file.path);
-
+export const uploadObject = catchAsync(async (Key, buffer) => {
   const uploadParams = {
     ACL: 'public-read',
     Bucket: config.aws.bucketName,
-    Body: fileStream,
-    Key: `Users/${userId}/userAvatar/${req.file.originalname}`
+    Body: buffer,
+    Key
   };
 
   const result = await s3.upload(uploadParams).promise();
-
-  const unlinkFile = promisify(fs.unlink);
-
-  await unlinkFile(req.file.path);
 
   return result;
 });
