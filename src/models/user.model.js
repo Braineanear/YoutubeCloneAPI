@@ -73,14 +73,6 @@ const userSchema = mongoose.Schema(
   { toJSON: { virtuals: true }, toObject: { virtuals: true }, timestamps: true }
 );
 
-userSchema.set('toJSON', {
-  transform: function (doc, ret) {
-    ret.id = ret._id;
-    delete ret._id;
-    delete ret.__v;
-  }
-});
-
 userSchema.index({ channelName: 'text' }, { unique: true });
 
 userSchema.virtual('subscribers', {
