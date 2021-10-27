@@ -9,7 +9,7 @@ const videoSchema = mongoose.Schema(
     },
     description: {
       type: String,
-      default: ''
+      required: [true, 'Description is required']
     },
     thumbnailUrl: {
       type: String,
@@ -23,8 +23,17 @@ const videoSchema = mongoose.Schema(
       type: Number,
       default: 0
     },
-    url: {
-      type: String
+    videoUrl: {
+      type: String,
+      required: true
+    },
+    videoKey: {
+      type: String,
+      required: true
+    },
+    videoFileId: {
+      type: String,
+      requred: true
     },
     status: {
       type: String,
