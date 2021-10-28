@@ -14,7 +14,19 @@ import { Video } from '../models/index';
 export const getAllPublicVideos = catchAsync(async (req, res, next) => {
   req.query.status = 'public';
 
-  let videos = await APIFeatures(req, Video);
+  const populateOptions = [
+    {
+      path: 'dislikes'
+    },
+    {
+      path: 'likes'
+    },
+    {
+      path: 'comments'
+    }
+  ];
+
+  let videos = await APIFeatures(req, Video, populateOptions);
 
   videos = videos.filter((video) => video.status === 'public');
 
