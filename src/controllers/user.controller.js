@@ -52,7 +52,16 @@ export const getAllUsers = catchAsync(async (req, res, next) => {
   if (!limit) limit = 10;
   if (!select) select = '';
 
-  const users = await APIFeatures(req, User);
+  const populateOptions = [
+    {
+      path: 'videos'
+    },
+    {
+      path: 'subscribers'
+    }
+  ];
+
+  const users = await APIFeatures(req, User, populateOptions);
 
   if (users.length === 0) {
     return next(new AppError(req.polyglot.t('noUsersFound'), 404));
@@ -133,7 +142,7 @@ export const uploadProfileImage = catchAsync(async (req, res, next) => {
   let user = await User.findById(userId);
 
   if (!user) {
-    return next(new AppError(req.polyglot.t('noUserFoundWithID'), 404));
+    return next(new AppError(req.polyglot.t('noUserFound'), 404));
   }
 
   const result = await uploadObject(req, userId);
