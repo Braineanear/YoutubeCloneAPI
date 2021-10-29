@@ -14,7 +14,7 @@ export const getAllComments = catchAsync(async (req, res, next) => {
 
   const comments = await APIFeatures(req, Comment, populateOptions);
 
-  if (!comments.length === 0) {
+  if (comments.length === 0) {
     return next(new AppError(req.polyglot.t('noCommentsFound'), 404));
   }
 
@@ -140,8 +140,7 @@ export const deleteComment = catchAsync(async (req, res, next) => {
 
     return res.status(200).json({
       status: 'success',
-      message: req.polyglot.t('successfulCommentDelete'),
-      comment
+      message: req.polyglot.t('successfulCommentDelete')
     });
   }
   return next(new AppError(req.polyglot.t('notAuthorized'), 400));
