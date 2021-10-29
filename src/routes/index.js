@@ -7,6 +7,7 @@ import categoryRoutes from './category.route';
 import videoRoutes from './video.route';
 import feelingRoutes from './feeling.route';
 import commentRoutes from './comment.route';
+import subscriptionRoutes from './subscription.route';
 
 const router = express.Router();
 
@@ -17,5 +18,6 @@ router.use('/categories', categoryRoutes);
 router.use('/videos', videoRoutes);
 router.use('/feelings', feelingRoutes);
 router.use('/comments', commentRoutes);
+router.use('/subscriptions', subscriptionRoutes);
 
 export default router;
