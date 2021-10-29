@@ -1,5 +1,6 @@
 import AppError from '../utils/appError';
 import catchAsync from '../utils/catchAsync';
+import uniqueId from '../utils/uniqueId';
 import { uploadObject, deleteObject, deleteDirectory } from '../utils/s3';
 
 import { User } from '../models/index';
@@ -9,13 +10,24 @@ import { User } from '../models/index';
  * @route     GET /profile/
  * @access    Private
  */
-export const getMyData = catchAsync(async (req, res, next) =>
-  res.status(200).json({
+export const getMyData = catchAsync(async (req, res, next) => {
+  const populateOptions = [
+    {
+      path: 'subscribers'
+    },
+    {
+      path: 'videos'
+    }
+  ];
+
+  const user = await User.findById(req.user.id).populate(populateOptions);
+
+  return res.status(200).json({
     status: 'success',
     message: req.polyglot.t('successfulProfileDataFound'),
-    user: req.user
-  })
-);
+    user
+  });
+});
 
 /**
  * @desc      Update Logged in User Data Controller
@@ -88,11 +100,14 @@ export const changeMyPassword = catchAsync(async (req, res, next) => {
  * @access    Private
  */
 export const updateMyProfileImage = catchAsync(async (req, res, next) => {
-  const { id: userId } = req.user;
+  const { id: userId, profileImageKey } = req.user;
+  const fileId = uniqueId();
+  const imageName = req.file.originalname.split(' ').join('-');
+  const imagePath = `Users/${userId}/avatar/file-${fileId}-${imageName}`;
 
-  const result = await uploadObject(req, userId);
+  const result = await uploadObject(imagePath, req.file.buffer);
 
-  await deleteObject(req.user.profileImageKey);
+  await deleteObject(profileImageKey);
 
   const user = await User.findByIdAndUpdate(
     userId,
