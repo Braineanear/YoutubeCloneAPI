@@ -26,6 +26,45 @@ import {
   deleteMyAccount
 } from './profile.controller';
 
+import {
+  getAllCategories,
+  getCategory,
+  createCategory,
+  updateCategory,
+  deleteCategory
+} from './category.controller';
+
+import {
+  getAllPublicVideos,
+  getAllPrivateVideos,
+  getVideo,
+  createVideo,
+  updateVideoDetails,
+  updateVideoThumbnail,
+  deleteVideo
+} from './video.controller';
+
+import {
+  createFeeling,
+  checkFeeling,
+  getLikedVideos
+} from './feeling.controller';
+
+import {
+  getAllComments,
+  getCommentsByVideoId,
+  createComment,
+  updateComment,
+  deleteComment
+} from './comment.controller';
+
+import {
+  getSubscribedChannels,
+  checkSubscription,
+  createSubscribe,
+  deleteSubscribe
+} from './subscription.controller';
+
 const authController = {
   signup,
   signin,
@@ -54,4 +93,48 @@ const profileController = {
   deleteMyAccount
 };
 
-export { authController, userController, profileController };
+const categoryController = {
+  getAllCategories,
+  getCategory,
+  createCategory,
+  updateCategory,
+  deleteCategory
+};
+
+const videoController = {
+  getAllPublicVideos,
+  getAllPrivateVideos,
+  getVideo,
+  createVideo,
+  updateVideoDetails,
+  updateVideoThumbnail,
+  deleteVideo
+};
+
+const feelingController = { createFeeling, checkFeeling, getLikedVideos };
+
+const commentController = {
+  getAllComments,
+  getCommentsByVideoId,
+  createComment,
+  updateComment,
+  deleteComment
+};
+
+const subscriptionController = {
+  getSubscribedChannels,
+  checkSubscription,
+  createSubscribe,
+  deleteSubscribe
+};
+
+export {
+  authController,
+  userController,
+  profileController,
+  categoryController,
+  videoController,
+  feelingController,
+  commentController,
+  subscriptionController
+};
