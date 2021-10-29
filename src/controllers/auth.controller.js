@@ -78,7 +78,18 @@ export const signin = catchAsync(async (req, res, next) => {
     return next(new AppError(req.polyglot.t('emailPasswordRequired'), 400));
   }
 
-  const user = await User.findOne({ email }).select('+password');
+  const populateOptions = [
+    {
+      path: 'subscribers'
+    },
+    {
+      path: 'videos'
+    }
+  ];
+
+  const user = await User.findOne({ email })
+    .select('+password')
+    .populate(populateOptions);
 
   if (!user) {
     return next(new AppError(req.polyglot.t('incorrectEmailOrPassword'), 401));
