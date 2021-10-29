@@ -19,7 +19,7 @@ router.route('/:id').get(getCommentsByVideoId);
 
 router.use(protect);
 
-router.post('/').post(createComment);
-router.patch('/:id').patch(updateComment).delete(deleteComment);
+router.route('/').post(createComment);
+router.route('/:id').patch(updateComment).delete(deleteComment);
 
 export default router;
