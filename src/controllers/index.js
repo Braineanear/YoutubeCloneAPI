@@ -65,6 +65,13 @@ import {
   deleteSubscribe
 } from './subscription.controller';
 
+import {
+  getHistory,
+  addHistoryItem,
+  deleteHistoryItem,
+  deleteHistory
+} from './history.controller';
+
 const authController = {
   signup,
   signin,
@@ -128,6 +135,13 @@ const subscriptionController = {
   deleteSubscribe
 };
 
+const historyController = {
+  getHistory,
+  addHistoryItem,
+  deleteHistoryItem,
+  deleteHistory
+};
+
 export {
   authController,
   userController,
@@ -136,5 +150,6 @@ export {
   videoController,
   feelingController,
   commentController,
-  subscriptionController
+  subscriptionController,
+  historyController
 };
