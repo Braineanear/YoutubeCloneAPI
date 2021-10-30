@@ -9,6 +9,7 @@ import feelingRoutes from './feeling.route';
 import commentRoutes from './comment.route';
 import subscriptionRoutes from './subscription.route';
 import historyRoutes from './history.route';
+import replyRoutes from './reply.route';
 
 const router = express.Router();
 
@@ -21,5 +22,6 @@ router.use('/feelings', feelingRoutes);
 router.use('/comments', commentRoutes);
 router.use('/subscriptions', subscriptionRoutes);
 router.use('/histories', historyRoutes);
+router.use('/replies', replyRoutes);
 
 export default router;
