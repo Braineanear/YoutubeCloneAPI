@@ -19,14 +19,7 @@ export const createFeeling = catchAsync(async (req, res, next) => {
   }
 
   if (video.status !== 'public') {
-    return next(
-      new AppError(
-        req.polyglot.t(
-          "You can't like/dislike this video until it's made public"
-        ),
-        400
-      )
-    );
+    return next(new AppError(req.polyglot.t('notPublicVideo'), 400));
   }
 
   if (video.userId.toString() === userId.toString()) {
