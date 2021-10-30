@@ -72,6 +72,14 @@ import {
   deleteHistory
 } from './history.controller';
 
+import {
+  getAllReplies,
+  getReply,
+  createReply,
+  updateReply,
+  deleteReply
+} from './reply.controller';
+
 const authController = {
   signup,
   signin,
@@ -142,6 +150,14 @@ const historyController = {
   deleteHistory
 };
 
+const replyController = {
+  getAllReplies,
+  getReply,
+  createReply,
+  updateReply,
+  deleteReply
+};
+
 export {
   authController,
   userController,
@@ -151,5 +167,6 @@ export {
   feelingController,
   commentController,
   subscriptionController,
-  historyController
+  historyController,
+  replyController
 };
