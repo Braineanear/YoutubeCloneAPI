@@ -55,7 +55,8 @@ export const createFeeling = catchAsync(async (req, res, next) => {
   }
 
   feeling.type = type;
-  feeling = await feeling.save();
+
+  await feeling.save();
 
   return res.status(200).json({
     status: 'success',
