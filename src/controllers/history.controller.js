@@ -13,12 +13,12 @@ export const getHistory = catchAsync(async (req, res, next) => {
   const histories = await APIFeatures(req, History);
 
   if (histories.length === 0) {
-    return next(new AppError(req.polyglot.t('noHistoriesFound'), 404));
+    return next(new AppError(req.polyglot.t('noHistoryFound'), 404));
   }
 
   return res.status(200).json({
     status: 'success',
-    message: req.polyglot.t('successfulHistoriesFound'),
+    message: req.polyglot.t('successfulHistoryFound'),
     histories
   });
 });
@@ -47,7 +47,7 @@ export const addHistoryItem = catchAsync(async (req, res, next) => {
 
   return res.status(200).json({
     status: 'success',
-    message: req.polyglot.t('successfulHistoryCreate'),
+    message: req.polyglot.t('successfuladdHistoryItem'),
     history
   });
 });
