@@ -8,6 +8,7 @@ import videoRoutes from './video.route';
 import feelingRoutes from './feeling.route';
 import commentRoutes from './comment.route';
 import subscriptionRoutes from './subscription.route';
+import historyRoutes from './history.route';
 
 const router = express.Router();
 
@@ -19,5 +20,6 @@ router.use('/videos', videoRoutes);
 router.use('/feelings', feelingRoutes);
 router.use('/comments', commentRoutes);
 router.use('/subscriptions', subscriptionRoutes);
+router.use('/histories', historyRoutes);
 
 export default router;
