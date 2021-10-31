@@ -2,6 +2,7 @@ import AppError from '../utils/appError';
 import catchAsync from '../utils/catchAsync';
 import APIFeatures from '../utils/apiFeatures';
 import { uploadObject, deleteObject } from '../utils/s3';
+import { generateCacheKey, setValue, getValue } from '../utils/redis';
 
 import { User } from '../models/index';
 
@@ -52,6 +53,23 @@ export const getAllUsers = catchAsync(async (req, res, next) => {
   if (!limit) limit = 10;
   if (!select) select = '';
 
+  const key = generateCacheKey(
+    'users',
+    `page:${page}-sortBy:${sort}-limit:${limit}-select:${select}`
+  );
+
+  let cached = await getValue(key);
+
+  cached = JSON.parse(cached);
+
+  if (cached) {
+    return res.status(200).json({
+      status: 'success',
+      message: req.polyglot.t('successfulUsersFound'),
+      users: cached
+    });
+  }
+
   const populateOptions = [
     {
       path: 'videos'
@@ -67,6 +85,8 @@ export const getAllUsers = catchAsync(async (req, res, next) => {
     return next(new AppError(req.polyglot.t('noUsersFound'), 404));
   }
 
+  setValue(key, JSON.stringify(users), 60);
+
   return res.status(200).json({
     status: 'success',
     message: req.polyglot.t('successfulUsersFound'),
@@ -81,6 +101,20 @@ export const getAllUsers = catchAsync(async (req, res, next) => {
  */
 export const getUser = catchAsync(async (req, res, next) => {
   const { id: userId } = req.params;
+
+  const key = generateCacheKey('user', userId);
+
+  let cached = await getValue(key);
+
+  cached = JSON.parse(cached);
+
+  if (cached) {
+    return res.status(200).json({
+      status: 'success',
+      message: req.polyglot.t('successfulUserFound'),
+      user: cached
+    });
+  }
 
   const user = await User.findById(userId);
 
