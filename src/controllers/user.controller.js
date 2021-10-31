@@ -122,6 +122,8 @@ export const getUser = catchAsync(async (req, res, next) => {
     return next(new AppError(req.polyglot.t('noUserFound'), 404));
   }
 
+  setValue(key, JSON.stringify(user), 60);
+
   return res.status(200).json({
     status: 'success',
     message: req.polyglot.t('successfulUserFound'),
