@@ -3,6 +3,7 @@ import catchAsync from '../utils/catchAsync';
 import APIFeatures from '../utils/apiFeatures';
 import uniqueId from '../utils/uniqueId';
 import { uploadObject, deleteObject, deleteDirectory } from '../utils/s3';
+import { generateCacheKey, setValue, getValue } from '../utils/redis';
 
 import { Video } from '../models/index';
 
@@ -13,6 +14,30 @@ import { Video } from '../models/index';
  */
 export const getAllPublicVideos = catchAsync(async (req, res, next) => {
   req.query.status = 'public';
+
+  let { page, sort, limit, select } = req.query;
+
+  if (!page) page = 1;
+  if (!sort) sort = '';
+  if (!limit) limit = 10;
+  if (!select) select = '';
+
+  const key = generateCacheKey(
+    'videos',
+    `page:${page}-sortBy:${sort}-limit:${limit}-select:${select}-status:public`
+  );
+
+  let cached = await getValue(key);
+
+  cached = JSON.parse(cached);
+
+  if (cached) {
+    return res.status(200).json({
+      status: 'success',
+      message: req.polyglot.t('successfulPublicVideosFound'),
+      videos: cached
+    });
+  }
 
   const populateOptions = [
     {
@@ -34,6 +59,8 @@ export const getAllPublicVideos = catchAsync(async (req, res, next) => {
     return next(new AppError(req.polyglot.t('noVideosFound'), 404));
   }
 
+  setValue(key, JSON.stringify(videos), 60);
+
   return res.status(200).json({
     status: 'success',
     message: req.polyglot.t('successfulPublicVideosFound'),
@@ -50,11 +77,37 @@ export const getAllPrivateVideos = catchAsync(async (req, res, next) => {
   req.query.status = 'private';
   req.query.userId = req.user.id;
 
+  let { page, sort, limit, select } = req.query;
+
+  if (!page) page = 1;
+  if (!sort) sort = '';
+  if (!limit) limit = 10;
+  if (!select) select = '';
+
+  const key = generateCacheKey(
+    'videos',
+    `page:${page}-sortBy:${sort}-limit:${limit}-select:${select}-status:private`
+  );
+
+  let cached = await getValue(key);
+
+  cached = JSON.parse(cached);
+
+  if (cached) {
+    return res.status(200).json({
+      status: 'success',
+      message: req.polyglot.t('successfulPrivateVideosFound'),
+      videos: cached
+    });
+  }
+
   let videos = await APIFeatures(req, Video);
 
   if (!videos) {
     return next(new AppError(req.polyglot.t('noVideosFound'), 404));
   }
+
+  setValue(key, JSON.stringify(videos), 60);
 
   return res.status(200).json({
     status: 'success',
@@ -69,6 +122,20 @@ export const getAllPrivateVideos = catchAsync(async (req, res, next) => {
  */
 export const getVideo = catchAsync(async (req, res, next) => {
   const { id: videoId } = req.params;
+
+  const key = generateCacheKey('video', videoId);
+
+  let cached = await getValue(key);
+
+  cached = JSON.parse(cached);
+
+  if (cached) {
+    return res.status(200).json({
+      status: 'success',
+      message: req.polyglot.t('successfulVideoFound'),
+      video: cached
+    });
+  }
 
   const video = await Video.findById(videoId).populate([
     { path: 'categoryId', model: 'Category' },
@@ -85,6 +152,8 @@ export const getVideo = catchAsync(async (req, res, next) => {
   if (!video) {
     return next(new AppError(req.polyglot.t('noVideoFound'), 404));
   }
+
+  setValue(key, JSON.stringify(video), 60);
 
   return res.status(200).json({
     status: 'success',
