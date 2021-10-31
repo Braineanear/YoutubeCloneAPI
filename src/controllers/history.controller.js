@@ -1,6 +1,7 @@
 import AppError from '../utils/appError';
 import catchAsync from '../utils/catchAsync';
 import APIFeatures from '../utils/apiFeatures';
+import { generateCacheKey, setValue, getValue } from '../utils/redis';
 
 import { History, Video } from '../models/index';
 
@@ -10,16 +11,42 @@ import { History, Video } from '../models/index';
  * @access    Private
  */
 export const getHistory = catchAsync(async (req, res, next) => {
-  const histories = await APIFeatures(req, History);
+  let { page, sort, limit, select } = req.query;
 
-  if (histories.length === 0) {
+  if (!page) page = 1;
+  if (!sort) sort = '';
+  if (!limit) limit = 10;
+  if (!select) select = '';
+
+  const key = generateCacheKey(
+    'history',
+    `page:${page}-sortBy:${sort}-limit:${limit}-select:${select}`
+  );
+
+  let cached = await getValue(key);
+
+  cached = JSON.parse(cached);
+
+  if (cached) {
+    return res.status(200).json({
+      status: 'success',
+      message: req.polyglot.t('successfulHistoryFound'),
+      history: cached
+    });
+  }
+
+  const history = await APIFeatures(req, History);
+
+  if (history.length === 0) {
     return next(new AppError(req.polyglot.t('noHistoryFound'), 404));
   }
+
+  setValue(key, JSON.stringify(history), 60);
 
   return res.status(200).json({
     status: 'success',
     message: req.polyglot.t('successfulHistoryFound'),
-    histories
+    history
   });
 });
 
