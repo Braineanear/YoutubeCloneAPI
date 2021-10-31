@@ -1,6 +1,7 @@
 import catchAsync from '../utils/catchAsync';
 import AppError from '../utils/appError';
 import APIFeatures from '../utils/apiFeatures';
+import { generateCacheKey, setValue, getValue } from '../utils/redis';
 
 import { Subscription } from '../models/index';
 
@@ -12,11 +13,37 @@ import { Subscription } from '../models/index';
 export const getSubscribedChannels = catchAsync(async (req, res, next) => {
   req.query.subscriberId = req.user.id;
 
+  let { page, sort, limit, select } = req.query;
+
+  if (!page) page = 1;
+  if (!sort) sort = '';
+  if (!limit) limit = 10;
+  if (!select) select = '';
+
+  const key = generateCacheKey(
+    'subscribedChannels',
+    `page:${page}-sortBy:${sort}-limit:${limit}-select:${select}`
+  );
+
+  let cached = await getValue(key);
+
+  cached = JSON.parse(cached);
+
+  if (cached) {
+    return res.status(200).json({
+      status: 'success',
+      message: req.polyglot.t('successfulSubscribedChannelsFound'),
+      channels: cached
+    });
+  }
+
   const channels = await APIFeatures(req, Subscription, 'channelId');
 
   if (channels.length === 0) {
     return next(new AppError(req.polyglot.t('noSubscribedChannelsFound'), 404));
   }
+
+  setValue(key, JSON.stringify(channels), 60);
 
   return res.status(200).json({
     status: 'success',
