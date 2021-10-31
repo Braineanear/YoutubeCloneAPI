@@ -1,6 +1,7 @@
 import catchAsync from '../utils/catchAsync';
 import AppError from '../utils/appError';
 import APIFeatures from '../utils/apiFeatures';
+import { generateCacheKey, setValue, getValue } from '../utils/redis';
 
 import { Comment, Video } from '../models/index';
 
@@ -32,6 +33,31 @@ export const getAllComments = catchAsync(async (req, res, next) => {
  */
 export const getCommentsByVideoId = catchAsync(async (req, res, next) => {
   const { id: videoId } = req.params;
+
+  let { page, sort, limit, select } = req.query;
+
+  if (!page) page = 1;
+  if (!sort) sort = '';
+  if (!limit) limit = 10;
+  if (!select) select = '';
+
+  const key = generateCacheKey(
+    'comments',
+    `page:${page}-sortBy:${sort}-limit:${limit}-select:${select}`
+  );
+
+  let cached = await getValue(key);
+
+  cached = JSON.parse(cached);
+
+  if (cached) {
+    return res.status(200).json({
+      status: 'success',
+      message: req.polyglot.t('successfulCommentsFound'),
+      comments: cached
+    });
+  }
+
   const populateOptions = [
     {
       path: 'userId'
@@ -46,6 +72,8 @@ export const getCommentsByVideoId = catchAsync(async (req, res, next) => {
   if (!comments) {
     return next(new AppError(req.polyglot.t('noCommentsFound'), 404));
   }
+
+  setValue(key, JSON.stringify(comments), 60);
 
   return res.status(200).json({
     status: 'success',
