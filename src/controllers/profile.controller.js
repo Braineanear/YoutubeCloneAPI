@@ -2,6 +2,7 @@ import AppError from '../utils/appError';
 import catchAsync from '../utils/catchAsync';
 import uniqueId from '../utils/uniqueId';
 import { uploadObject, deleteObject, deleteDirectory } from '../utils/s3';
+import { generateCacheKey, setValue, getValue } from '../utils/redis';
 
 import { User } from '../models/index';
 
@@ -11,6 +12,22 @@ import { User } from '../models/index';
  * @access    Private
  */
 export const getMyData = catchAsync(async (req, res, next) => {
+  const { id: userId } = req.user;
+
+  const key = generateCacheKey('profile', userId);
+
+  let cached = await getValue(key);
+
+  cached = JSON.parse(cached);
+
+  if (cached) {
+    return res.status(200).json({
+      status: 'success',
+      message: req.polyglot.t('successfulProfileDataFound'),
+      user: cached
+    });
+  }
+
   const populateOptions = [
     {
       path: 'subscribers'
@@ -21,6 +38,8 @@ export const getMyData = catchAsync(async (req, res, next) => {
   ];
 
   const user = await User.findById(req.user.id).populate(populateOptions);
+
+  setValue(key, JSON.stringify(user), 60);
 
   return res.status(200).json({
     status: 'success',
