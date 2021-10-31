@@ -1,5 +1,6 @@
 import catchAsync from '../utils/catchAsync';
 import AppError from '../utils/appError';
+import { generateCacheKey, setValue, getValue } from '../utils/redis';
 
 import { Feeling, Video } from '../models/index';
 
@@ -87,6 +88,30 @@ export const checkFeeling = catchAsync(async (req, res, next) => {
 export const getLikedVideos = catchAsync(async (req, res, next) => {
   const { id: userId } = req.user;
 
+  let { page, sort, limit, select } = req.query;
+
+  if (!page) page = 1;
+  if (!sort) sort = '';
+  if (!limit) limit = 10;
+  if (!select) select = '';
+
+  const key = generateCacheKey(
+    'likedVideos',
+    `page:${page}-sortBy:${sort}-limit:${limit}-select:${select}`
+  );
+
+  let cached = await getValue(key);
+
+  cached = JSON.parse(cached);
+
+  if (cached) {
+    return res.status(200).json({
+      status: 'success',
+      message: req.polyglot.t('successfulLikedVideosFound'),
+      likes: cached
+    });
+  }
+
   const likes = await Feeling.find({ type: 'like', userId }).populate([
     {
       path: 'videoId'
@@ -100,6 +125,8 @@ export const getLikedVideos = catchAsync(async (req, res, next) => {
   if (likes.length === 0) {
     return next(new AppError(req.polyglot.t('noFeelingsFound'), 404));
   }
+
+  setValue(key, JSON.stringify(likes), 60);
 
   return res.status(200).json({
     status: 'success',
